@@ -1,0 +1,36 @@
+#! /usr/bin/python3
+
+import requests
+from argparse import ArgumentParser
+from subprocess import Popen, PIPE
+
+def main():
+    args = parse_args()
+
+    command = args.command
+    if 'check' in command:
+        check()
+    elif 'start' in command:
+        process = Popen(['sudo', 'service', 'wg-quick@mullvad-us22', 'start'], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        check()
+    elif 'stop' in command:
+        process = Popen(['sudo', 'service', 'wg-quick@mullvad-us22', 'stop'], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        check()
+    else:
+        print(f"'{command}' not recognized")
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument("command", type=str, help="start|stop|check")
+    args = parser.parse_args()
+    return args
+
+
+def check():
+    response = requests.get('https://am.i.mullvad.net/connected')
+    print(f"{response.text.strip()}")
+
+if __name__ == "__main__":
+    main()
